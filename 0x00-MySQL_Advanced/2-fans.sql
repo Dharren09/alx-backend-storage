@@ -1,3 +1,7 @@
+
+-- script ranks country origins of bands ordered by
+-- number of (non-unique) fans
+-- imports a table dumb
 SELECT origin, SUM(fans) AS nb_fans
     FROM metal_bands
     GROUP BY origin
