@@ -2,11 +2,12 @@
 -- by the second number or returns 0 if tthe second
 -- number is equal to 0
 -- function takes two args
+DROP FUNCTION if exists SafeDiv;
 DELIMITER $$
 CREATE FUNCTION SafeDiv(a INT, b INT)
-RETURNS INT
+RETURNS FLOAT
 BEGIN
-    DECLARE result INT;
+    DECLARE result FLOAT;
     
     IF b = 0 THEN
 	SET result = 0;
