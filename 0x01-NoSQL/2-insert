@@ -1,0 +1,5 @@
+// script inserts a doc in the collection
+// doc must have one attr and value
+// db will be passed as option of mongo cmd
+
+db.school.insertOne({ name: "Holberton school" });
