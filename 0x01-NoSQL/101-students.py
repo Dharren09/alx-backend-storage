@@ -4,7 +4,6 @@
 the top mut be ordered"""
 
 
-
 def top_students(mongo_collection):
     students = mongo_collection.find()
     top_students = []
