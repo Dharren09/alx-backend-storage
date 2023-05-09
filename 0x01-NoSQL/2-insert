@@ -2,4 +2,4 @@
 // doc must have one attr and value
 // db will be passed as option of mongo cmd
 
-db.school.insertOne({ name: "Holberton school" });
+db.school.insert({ name: "Holberton school" });
