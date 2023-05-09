@@ -1,0 +1,8 @@
+// script adds a new attr to a doc in the collection
+// update shd add  the attr to doc with name=Holb
+
+db.school.update(
+  { name: "Holberton school" },
+  {$set: { address: "972 Mission street" }},
+  {multi: true}
+);
