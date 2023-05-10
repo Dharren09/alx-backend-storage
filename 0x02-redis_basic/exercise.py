@@ -34,9 +34,25 @@ def call_history(method: Callable) -> Callable:
     return wrapper
 
 
+def replay(method):
+    """fn displays the history of calls of a particular function"""
+    inputs_key = method.__qualname__ + ":inputs"
+    outputs_key = method.__qualname__ + ":outputs"
+
+    inputs = [i.decode('utf-8') for i in conn.lrange(inputs_key, 0, -1)]
+    outputs = [o.decode('utf-8') for o in conn.lrange(outputs_key, 0, -1)]
+
+    calls = [f"{method.__qualname__}{str(args)} -> {output.decode()}"
+             for args, output in zip(inputs, outputs)]
+
+    return f"{method.__qualname__} was called {len(calls)}
+    times: \n" + "\n".join(calls)
+
+
 class Cache:
     """generates random key, stores instance of client as private variable
     then flushes the instance"""
+
     def __init__(self):
         key = str(uuid.uuid4())
         self._redis = redis.Redis()
@@ -44,8 +60,8 @@ class Cache:
 
     """method takes data arg and returns a string, generates a random key
     stores the input data then returns the key"""
-    @count_calls
-    @call_history
+    @ count_calls
+    @ call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         key = str(uuid.uuid4())
         self._redis.set(key, data)
