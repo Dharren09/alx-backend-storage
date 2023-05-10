@@ -7,6 +7,7 @@ from typing import Union, Callable
 import uuid
 from functools import wraps
 
+
 def count_calls(method: Callable) -> Callable:
     """func that increments the count for the key nd returns it"""
     @wraps(method)
@@ -14,6 +15,22 @@ def count_calls(method: Callable) -> Callable:
         key = method.__qualname__
         self._redis.incr(key)
         return method(self, *args, **kwargs)
+    return wrapper
+
+
+def call_history(method: Callable) -> Callable:
+    """Decorator that stores the history of outputs and inputs"""
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        key_inputs = method.__qualname__ + ":inputs"
+        key_outputs = method.__qualname__ + ":outputs"
+
+        self._redis.rpush(key_inputs, str(args))
+        """executes the wrapped fn to get the output"""
+        output = method(self, *args, **kwargs)
+
+        self._redis.rpush(key_outputs, str(output))
+        return output
     return wrapper
 
 
@@ -28,6 +45,7 @@ class Cache:
     """method takes data arg and returns a string, generates a random key
     stores the input data then returns the key"""
     @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         key = str(uuid.uuid4())
         self._redis.set(key, data)
