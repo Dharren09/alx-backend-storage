@@ -43,7 +43,7 @@ def replay(method):
         redis_store = getattr(self, '_redis', None)
         if not isinstance(redis_store, redis.Redis):
             return
-        fxn_call_count = int(redis_store.get(fxn_name) or 0)
+        fn_call_count = int(redis_store.get(fn_name) or 0)
         print(f"{fn_name} was called {fn_call_count} times:")
         for fn_input, fn_output in zip(redis_store.lrange(
                 in_key, 0, -1), redis_store.lrange(out_key, 0, -1)):
@@ -62,8 +62,9 @@ class Cache:
 
     """method takes data arg and returns a string, generates a random key
     stores the input data then returns the key"""
-    @ count_calls
-    @ call_history
+    @count_calls
+    @call_history
+    @replay
     def store(self, data: Union[str, bytes, int, float]) -> str:
         key = str(uuid.uuid4())
         self._redis.set(key, data)
