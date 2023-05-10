@@ -22,10 +22,15 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str, fn: Callable, default=None):
+    def get(
+        self,
+        key: str,
+        fn: Callable = None,
+        default=None
+    ) -> Union[str, bytes, int, float, None]:
         value = self._redis.get(key)
         if value is None:
-            return None
+            return default
         if fn is not None:
             value = fn(value)
         return value
