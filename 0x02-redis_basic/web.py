@@ -11,7 +11,7 @@ from functools import wraps
 redis_store = redis.Redis()
 
 
-def data_cacher(method: Callable) -> Callable:
+def track_count(method: Callable) -> Callable:
     """function that caches the output of fetched data"""
     @wraps(method)
     def invoker(url) -> str:
@@ -27,7 +27,7 @@ def data_cacher(method: Callable) -> Callable:
     return invoker
 
 
-@data_cacher
+@track_count
 def get_page(url: str) -> str:
     """trackss how many times a particular URL was accessed
     in the key cache the result with an expiration of 10 secs"""
