@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-
-"""create a cache class and two methods that stores an instance"""
-
 import redis
 from typing import Union, Callable
 import uuid
@@ -18,7 +14,7 @@ def count_calls(method: Callable) -> Callable:
     return wrapper
 
 
-def call_history(method: Callable) -> Callable:
+def call_history(method: Callable = None) -> Callable:
     """Decorator that stores the history of outputs and inputs"""
     @wraps(method)
     def wrapper(self, *args, **kwargs):
@@ -34,13 +30,14 @@ def call_history(method: Callable) -> Callable:
     return wrapper
 
 
-def replay(method: Callable):
+def replay(method: Callable) -> Callable:
     """fn displays the history of calls of a particular function"""
 
+    @wraps(method)
     def wrapper(self, *args, **kwargs):
         r = redis.Redis()
         fn_name = method.__qualname__
-        n_calls = r.get(f_name)
+        n_calls = r.get(fn_name)
         try:
             n_calls = n_calls.decode('utf-8')
         except Exception:
@@ -60,7 +57,10 @@ def replay(method: Callable):
             except Exception:
                 o = ""
 
-            print(f'{f_name}(*{i}) -> {o}')
+            print(f'{fn_name}(*{i}) -> {o}')
+
+    return wrapper
+
 
 class Cache:
     """generates random key, stores instance of client as private variable
