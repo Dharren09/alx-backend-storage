@@ -15,6 +15,7 @@ def data_cacher(method: Callable) -> Callable:
     """function that caches the output of fetched data"""
     @wraps(method)
     def invoker(url) -> str:
+        "function that caches the output"""
         redis_store.incr(f'count:{url}')
         result = redis_store.get(f'result:{url}')
         if result:
@@ -28,6 +29,6 @@ def data_cacher(method: Callable) -> Callable:
 
 @data_cacher
 def get_page(url: str) -> str:
-    """trackss how many times a particular URL was accessed 
+    """trackss how many times a particular URL was accessed
     in the key cache the result with an expiration of 10 secs"""
     return requests.get(url).text
