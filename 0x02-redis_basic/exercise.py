@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""creates a class, init method and a store instance tthat take in a 
+"""creates a class, init method and a store instance tthat take in a
 data argument and returns a str"""
 
 import redis
