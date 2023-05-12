@@ -3,17 +3,25 @@
 data argument and returns a str"""
 
 import redis
-from typing import Union, Callable
+from typing import Union
 import uuid
-from functools import wraps
 
 
 class Cache:
-    """initializes the Cache class"""
+    """
+    initializes the Cache class
+    generates random key, stores instance of client as private variable
+    then flushes the instance
+    """
 
     def __init__(self):
         self._redis = redis.Redis()
         self._redis.flushdb
+
+    """
+    method takes data arg and returns a string, generates a random key
+    stores the input data then returns the key
+    """
 
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """stores the given data in Redis and returns the key"""
