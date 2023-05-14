@@ -3,7 +3,7 @@
 data argument and returns a str"""
 
 import redis
-from typing import Union, Callable
+from typing import Union, Callable, Optional
 import uuid
 from functools import wraps
 
@@ -20,8 +20,9 @@ def count_calls(method: Callable) -> Callable:
 def call_history(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(self, *args):
-        input_list_key = f"{method.__qualname__}:inputs"
-        output_list_key = f"{method.__qualname__}:outputs"
+        key = method.__qualname__
+        input_list_key = f"{key}:inputs"
+        output_list_key = f"{key}:outputs"
 
         self._redis.rpush(input_list_key, str(args))
         output = method(self, *args)
@@ -31,24 +32,33 @@ def call_history(method: Callable) -> Callable:
     return wrapper
 
 def replay(method: Callable) -> None:
-    @wraps(method)
-    def wrapper(self, *args):
-        redis_instance = redis.Redis()
-        input_list_key = f"{method.__qualname__}:inputs"
-        output_list_key = f"{method.__qualname__}:outputs"
+    """Display the history of calls of a particular function"""
+    if not callable(method):
+        raise TypeError("fn must be callable")
 
-        input_list = redis_instance.lrange(input_list_key, 0, -1)
-        output_list = redis_instance.lrange(output_list_key, 0, -1)
-        
-        print(f"{method.__qualname__} was called {len(input_list)} times:")
+    r = redis.Redis()
+    f_name = method.__qualname__
+    n_calls = r.get(f_name)
+    try:
+        n_calls = int(n_calls)
+    except Exception:
+        n_calls = 0
+    print(f'{f_name} was called {n_calls} times:')
 
-        for inputs, output in zip(input_list, output_list):
-            inputs = eval(inputs.decode())
-            output = output.decode()
+    ins = r.lrange(f_name + ":inputs", 0, -1)
+    outs = r.lrange(f_name + ":outputs", 0, -1)
 
-            print(f"{method.__qualname__}{inputs} -> {output}")
+    for i, o in zip(ins, outs):
+        try:
+            i = i.decode('utf-8')
+        except Exception:
+            i = ""
+        try:
+            o = o.decode('utf-8')
+        except Exception:
+            o = ""
 
-    return wrapper
+        print(f'{f_name}(*{i}) -> {o}')
 
 
 class Cache:
@@ -69,7 +79,7 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-    def get(self, key, fn=None):
+    def get(self, key, fn: Optional[callable] = None):
         value = self._redis.get(key)
         if value is None:
             return None
@@ -82,7 +92,7 @@ class Cache:
         return self.get(key, lambda d: d.decode("utf-8"))
 
     def get_int(self, key):
-        """ return integers"""
+        """ return integers from redis database"""
         return self.get(key, int)
 
 
