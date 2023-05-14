@@ -14,7 +14,7 @@ class Cache:
         creates a private variable then flushes out
         """
         self._redis = redis.Redis()
-        self._redis.flushdb
+        self._redis.flushdb()
 
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """stores the given data in Redis and returns the key"""
