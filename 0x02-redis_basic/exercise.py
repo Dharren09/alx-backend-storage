@@ -8,20 +8,13 @@ import uuid
 
 
 class Cache:
-    """
-    initializes the Cache class
-    generates random key, stores instance of client as private variable
-    then flushes the instance
-    """
-
     def __init__(self):
+        """
+        initilaizes a redis database
+        creates a private variable then flushes out
+        """
         self._redis = redis.Redis()
         self._redis.flushdb
-
-    """
-    method takes data arg and returns a string, generates a random key
-    stores the input data then returns the key
-    """
 
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """stores the given data in Redis and returns the key"""
