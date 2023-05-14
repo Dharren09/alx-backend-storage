@@ -34,14 +34,12 @@ def call_history(method: Callable) -> Callable:
 def replay(method: Callable) -> None:
     """Display the history of calls of a particular function"""
     if not callable(method):
-        raise TypeError("fn must be callable")
+        raise TypeError("method must be callable")
 
     r = redis.Redis()
     f_name = method.__qualname__
     n_calls = r.get(f_name)
-    try:
-        n_calls = int(n_calls)
-    except Exception:
+    if n_calls is None:
         n_calls = 0
     print(f'{f_name} was called {n_calls} times:')
 
@@ -72,7 +70,6 @@ class Cache:
 
     @count_calls
     @call_history
-    @replay
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """stores the given data in Redis and returns the key"""
         key = str(uuid.uuid4())
