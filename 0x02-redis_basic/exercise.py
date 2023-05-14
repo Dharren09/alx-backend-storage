@@ -3,8 +3,19 @@
 data argument and returns a str"""
 
 import redis
-from typing import Union
+from typing import Union, Callable
 import uuid
+from functools import wraps
+
+def count_calls(method: Callable) -> Callable:
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """get qualified name of the method"""
+        key = method.__qualname__
+        """get increment of the count"""
+        self._redis.incr(key)
+        return method(self, *args, **kwargs)
+    return wrapper
 
 
 class Cache:
@@ -16,6 +27,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """stores the given data in Redis and returns the key"""
         key = str(uuid.uuid4())
