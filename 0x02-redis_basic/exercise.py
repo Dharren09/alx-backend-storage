@@ -10,9 +10,14 @@ from functools import wraps
 
 
 def count_calls(method: Callable) -> Callable:
+    """
+    Decorator that counts the number of times a method is called.
+    """
     @wraps(method)
     def wrapper(self, *args, **kwargs):
-        """Count the number of times the method is called."""
+        """
+        Wrapper function that increments the method call count and calls the method.
+        """
         key = method.__qualname__
         self._redis.incr(key)
         return method(self, *args, **kwargs)
@@ -21,9 +26,14 @@ def count_calls(method: Callable) -> Callable:
 
 
 def call_history(method: Callable) -> Callable:
+    """
+    Decorator that stores the input and output history of a method.
+    """
     @wraps(method)
     def wrapper(self, *args):
-        """Store the input and output history of the method."""
+        """
+        Wrapper function that stores the input and output history and calls the method.
+        """
         key = method.__qualname__
         input_list_key = f"{key}:inputs"
         output_list_key = f"{key}:outputs"
@@ -38,7 +48,9 @@ def call_history(method: Callable) -> Callable:
 
 
 def replay(instance: object):
-    """Displays the history of calls for all methods in the instance."""
+    """
+    Displays the history of calls for all methods in the instance.
+    """
     redis_client = redis.Redis()
     methods = [m for m in dir(instance) if callable(getattr(instance, m))]
     for method_name in methods:
