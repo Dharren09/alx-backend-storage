@@ -16,7 +16,8 @@ def count_calls(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         """
-        Wrapper function that increments the method call count and calls the method.
+        Wrapper function that increments the
+        method call count and calls the method.
         """
         key = method.__qualname__
         self._redis.incr(key)
@@ -32,7 +33,8 @@ def call_history(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(self, *args):
         """
-        Wrapper function that stores the input and output history and calls the method.
+        Wrapper function that stores the input
+        and output history and calls the method.
         """
         key = method.__qualname__
         input_list_key = f"{key}:inputs"
@@ -61,7 +63,8 @@ def replay(instance: object):
         count = redis_client.get(method_name).decode("utf-8")
         print(f"{method_name} was called {count} times:")
         for i, j in zip(inputs, outputs):
-            print(f"{method_name}(*{i.decode('utf-8')}) -> {j.decode('utf-8')}")
+            print(f"{method_name}(*{i.decode('utf-8')}) ->
+                    {j.decode('utf-8')}")
 
 
 class Cache:
