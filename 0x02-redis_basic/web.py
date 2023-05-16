@@ -1,29 +1,34 @@
 #!/usr/bin/env python3
 """implements a fn which uses requests to obtain an HTML content"""
 
-import requests
 import redis
+import requests
 from typing import Callable
 from functools import wraps
 
 
 """initiates the redis instance"""
-redis_store = redis.Redis()
+r = redis.Redis()
 
 
 def track_count(method: Callable) -> Callable:
     """function that caches the output of fetched data"""
     @wraps(method)
     def invoker(url) -> str:
-        "function that caches the output"""
-        redis_store.incr(f'count:{url}')
-        result = redis_store.get(f'result:{url}')
-        if result:
-            return result.decode('utf-8')
-        result = method(url)
-        redis_store.set(f'count:{url}', 0)
-        redis_store.setex(f'result:{url}', 10, result)
-        return result
+        """ Wrapper for the decorated function """
+        cached_html = r.get("cached_html:{}".format(url))
+        if cached_html:
+            return cached_html.decode('utf-8')
+        # track nombre of request made by the server to load html
+        r.incr("count:{}".format(url))
+
+        # make a new request
+        html = method(url)
+        # make  a new copy on the chache with 10 sec of expiration
+        r.setex("cached_html:{}".format(url), 10, html)
+
+        return html
+
     return invoker
 
 
