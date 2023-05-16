@@ -18,7 +18,7 @@ def track_count(method: Callable) -> Callable:
         cached_html = r.get("cached_html:{}".format(url))
         if cached_html:
             return cached_html.decode('utf-8')
-        # track number of requests made by the server to load html
+        # track the number of requests made by the server to load html
         r.incr("count:{}".format(url), amount=1)
 
         # make a new request
@@ -34,13 +34,18 @@ def track_count(method: Callable) -> Callable:
 @track_count
 def get_page(url: str) -> str:
     """tracks how many times a particular URL was accessed
-    and caches the result with an expiration of 10 secs"""
+    in the key cache the result with an expiration of 10 secs"""
     return requests.get(url).text
 
 
 if __name__ == "__main__":
-    # Test the get_page function
     url = "http://google.com"
-    assert get_page(url) == get_page(urli)
-    assert r.ttl("cached_html:{}".format(url)) >= 1
-    assert r.get("count:{}".format(url)) == b"1"
+
+    # Testing the get_page function
+    assert r.get("count:{}".format(url)) is None
+    get_page(url)
+    assert int(r.get("count:{}".format(url)).decode("utf-8")) == 1
+    assert r.ttl("cached_html:{}".format(url)) > 0  # HTML content is cached
+    time.sleep(10)
+    assert r.get("cached_html:{}".format(url)) is None
+    assert r.get("count:{}".format(url)) is None
